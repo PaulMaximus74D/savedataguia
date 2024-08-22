@@ -1,19 +1,25 @@
+from flask import Flask, request
 import csv
+import os
 
-def save_to_csv(data):
-    fieldnames = ['guide-number', 'date', 'sender', 'recipient', 'origin', 'destination', 'city', 'content', 'packages', 'weight', 'amount', 'return']
+app = Flask(__name__)
 
-    try:
-        with open('RESUMEN.csv', 'a', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            
-            # Verificar si es la primera vez que se escribe en el archivo
-            if csvfile.tell() == 0:
-                writer.writeheader()
-            
-            writer.writerow(data)
+@app.route('/save_data', methods=['POST'])
+def save_to_csv():
+    data = request.json
+    file_exists = os.path.isfile('RESUMEN.csv')
+
+    with open('RESUMEN.csv', mode='a', newline='') as file:
+        writer = csv.writer(file)
+
+        if not file_exists:
+            # Escribir el encabezado solo si el archivo no existe
+            writer.writerow(data.keys())
         
-        print('Datos guardados en RESUMEN.csv')
-    
-    except Exception as e:
-        print(f'Error al guardar los datos: {e}')
+        # Escribir los datos
+        writer.writerow(data.values())
+
+    return {'message': 'Datos guardados exitosamente'}
+
+if __name__ == '__main__':
+    app.run(debug=True)
