@@ -118,40 +118,33 @@
     
     <div class="message" id="message"></div>
 
-    <script>
-        const form = document.getElementById('dispatch-form');
-        const messageDiv = document.getElementById('message');
+<script>
+    const form = document.getElementById('dispatch-form');
+    const messageDiv = document.getElementById('message');
 
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
 
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
 
-            // Aquí irá el código para guardar los datos en un archivo CSV
-            saveToCSV(data);
-
+        // Enviar los datos al servidor Python
+        fetch('/save_data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(responseData => {
             form.reset();
-            messageDiv.textContent = 'Registro guardado exitosamente.';
+            messageDiv.textContent = responseData.message;
+        })
+        .catch((error) => {
+            console.error('Error al guardar los datos:', error);
         });
-
-        function saveToCSV(data) {
-            const csvData = Object.values(data).join(',') + '\n';
-
-            fetch('RESUMEN.csv', {
-                method: 'POST',
-                body: csvData,
-                headers: {
-                    'Content-Type': 'text/csv'
-                }
-            })
-            .then(() => {
-                console.log('Datos guardados en RESUMEN.csv');
-            })
-            .catch((error) => {
-                console.error('Error al guardar los datos:', error);
-            });
-        }
-    </script>
+    });
+</script>
 </body>
 </html>
